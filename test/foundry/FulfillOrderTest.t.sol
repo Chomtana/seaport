@@ -20,6 +20,9 @@ contract FulfillOrderTest is BaseOrderTest {
     using ArithmeticUtil for uint120;
     using ArithmeticUtil for uint8;
 
+    FuzzInputsCommon empty;
+    bytes signature1271;
+
     struct FuzzInputsCommon {
         address zone;
         uint128 id;
@@ -165,14 +168,14 @@ contract FulfillOrderTest is BaseOrderTest {
             context.consideration.getOrderHash(orderComponents)
         );
 
+        uint256 startTime = block.timestamp;
         vm.warp(block.timestamp + context.args.warpAmount);
         uint256 expectedAmount = _locateCurrentAmount(
             context.args.startAmount.mul(1000),
             context.args.endAmount.mul(1000),
-            context.args.warpAmount,
-            1000 - context.args.warpAmount,
-            1000,
-            true // for consideration
+            startTime,
+            startTime + 1000,
+            false // don't round up offers
         );
         vm.expectEmit(true, true, true, false, address(token1));
         emit Transfer(alice, address(this), expectedAmount);
@@ -241,14 +244,14 @@ contract FulfillOrderTest is BaseOrderTest {
             context.consideration.getOrderHash(orderComponents)
         );
 
+        uint256 startTime = block.timestamp;
         vm.warp(block.timestamp + context.args.warpAmount);
         uint256 expectedAmount = _locateCurrentAmount(
             context.args.startAmount.mul(1000),
             context.args.endAmount.mul(1000),
-            context.args.warpAmount,
-            1000 - context.args.warpAmount,
-            1000,
-            true // for consideration
+            startTime,
+            startTime + 1000,
+            true // round up considerations
         );
         token1.mint(address(this), expectedAmount);
         vm.expectEmit(true, true, true, false, address(token1));
@@ -508,6 +511,85 @@ contract FulfillOrderTest is BaseOrderTest {
             this.fulfillOrderEthToErc721FullRestricted,
             Context(consideration, inputs, 0, 0, 0)
         );
+    }
+
+    function testFulfillOrder64And65Byte1271Signatures() public {
+        signature1271 = abi.encodePacked(bytes32(0), bytes32(0), bytes1(0));
+        assertEq(signature1271.length, 65);
+        test(
+            this.fulfillOrder64And65Byte1271Signatures,
+            Context(referenceConsideration, empty, 0, 0, 0)
+        );
+        test(
+            this.fulfillOrder64And65Byte1271Signatures,
+            Context(consideration, empty, 0, 0, 0)
+        );
+        signature1271 = abi.encodePacked(bytes32(0), bytes32(0));
+        assertEq(signature1271.length, 64);
+        test(
+            this.fulfillOrder64And65Byte1271Signatures,
+            Context(referenceConsideration, empty, 0, 0, 0)
+        );
+        test(
+            this.fulfillOrder64And65Byte1271Signatures,
+            Context(consideration, empty, 0, 0, 0)
+        );
+    }
+
+    function fulfillOrder64And65Byte1271Signatures(Context memory context)
+        external
+        stateless
+    {
+        test1155_1.mint(address(this), 1, 1);
+        _configureERC1155OfferItem(1, 1);
+        _configureEthConsiderationItem(payable(this), 1);
+
+        _configureOrderParameters(
+            address(this),
+            address(0),
+            bytes32(0),
+            globalSalt++,
+            false
+        );
+
+        Order memory order = Order(baseOrderParameters, signature1271);
+        vm.prank(bob);
+        context.consideration.fulfillOrder{ value: 1 }(order, bytes32(0));
+    }
+
+    function testFulfillOrder2098() public {
+        test(
+            this.fulfillOrder2098,
+            Context(referenceConsideration, empty, 0, 0, 0)
+        );
+        test(this.fulfillOrder2098, Context(consideration, empty, 0, 0, 0));
+    }
+
+    function fulfillOrder2098(Context memory context) external stateless {
+        test1155_1.mint(bob, 1, 1);
+        _configureERC1155OfferItem(1, 1);
+        _configureEthConsiderationItem(payable(bob), 1);
+
+        _configureOrderParameters(
+            bob,
+            address(0),
+            bytes32(0),
+            globalSalt++,
+            false
+        );
+        _configureOrderComponents(context.consideration.getCounter(bob));
+        bytes32 orderHash = context.consideration.getOrderHash(
+            baseOrderComponents
+        );
+        bytes memory signature = signOrder2098(
+            context.consideration,
+            bobPk,
+            orderHash
+        );
+
+        Order memory order = Order(baseOrderParameters, signature);
+
+        context.consideration.fulfillOrder{ value: 1 }(order, bytes32(0));
     }
 
     function fulfillOrderEthToErc721(Context memory context)

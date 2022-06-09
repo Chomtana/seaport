@@ -242,7 +242,7 @@ contract NonReentrantTest is BaseOrderTest {
                 address(token1), // Token
                 0, // identifier
                 1, // start amount
-                1, // end amout
+                1, // end amount
                 payable(address(this)) // recipient
             )
         );
@@ -550,15 +550,6 @@ contract NonReentrantTest is BaseOrderTest {
         _orders[1] = _convertOrderToAdvanced(_regOrders[1]);
         criteriaResolvers = new CriteriaResolver[](0);
         return (_orders, criteriaResolvers, _fulfillments);
-    }
-
-    ///@dev allow signing for this contract since it needs to be recipient of basic order to reenter on receive
-    function isValidSignature(bytes32, bytes memory)
-        external
-        pure
-        returns (bytes4)
-    {
-        return 0x1626ba7e;
     }
 
     function _doReenter() internal {
