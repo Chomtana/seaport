@@ -1674,7 +1674,7 @@ describe(`Consideration (version: ${VERSION}) — initial test suite`, function 
             return receipt;
           });
         });
-        it("ERC721 <=> ERC20 (cross chain, EIP-1271 signature)", async () => {
+        it("ERC721 <=> ERC20 (65 bytes, EIP-1271 signature)", async () => {
           // Override default EIP-1271 wallet with a special cross chain version that doesn't use EIP-2098 signature despite having signature length of 65.
           const sellerContract = await deployContract(
             "EIP1271WalletCrossChain",

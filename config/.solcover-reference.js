@@ -22,6 +22,7 @@ module.exports = {
     "lib/ConsiderationStructs.sol",
     "lib/TokenTransferrer.sol",
     "test/EIP1271Wallet.sol",
+    "test/EIP1271WalletCrossChain.sol",
     "test/ExcessReturnDataRecipient.sol",
     "test/Reenterer.sol",
     "test/TestERC1155.sol",

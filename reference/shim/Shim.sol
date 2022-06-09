@@ -7,6 +7,7 @@ pragma solidity ^0.8.7;
  * feedback than running an extra yarn build
  */
 import { EIP1271Wallet } from "contracts/test/EIP1271Wallet.sol";
+import { EIP1271WalletCrossChain } from "contracts/test/EIP1271WalletCrossChain.sol";
 import { Reenterer } from "contracts/test/Reenterer.sol";
 import { TestERC20 } from "contracts/test/TestERC20.sol";
 import { TestERC721 } from "contracts/test/TestERC721.sol";

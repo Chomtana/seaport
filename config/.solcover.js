@@ -23,6 +23,7 @@ module.exports = {
     "reference/lib/ReferenceConsiderationPure.sol",
     "reference/lib/ReferenceTokenTransferrer.sol",
     "test/EIP1271Wallet.sol",
+    "test/EIP1271WalletCrossChain.sol",
     "test/ExcessReturnDataRecipient.sol",
     "test/ERC1155BatchRecipient.sol",
     "test/Reenterer.sol",
